@@ -1,0 +1,532 @@
+/* Custom Pink Theme Variables */
+:root {
+    --primary-pink: #ff69b4;
+    --light-pink: #ffe6f2;
+    --dark-pink: #d63384;
+    --accent-pink: #ff1493;
+    --soft-pink: #fce4ec;
+    --rose-pink: #f8bbd9;
+    --text-dark: #2c1810;
+    --text-light: #6c757d;
+    --white: #ffffff;
+    --shadow: 0 4px 6px rgba(255, 105, 180, 0.1);
+    --shadow-hover: 0 8px 15px rgba(255, 105, 180, 0.2);
+}
+
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-dark);
+    background-color: var(--white);
+}
+
+/* Custom Button Styles */
+.btn-pink {
+    background-color: var(--primary-pink);
+    border-color: var(--primary-pink);
+    color: var(--white);
+    transition: all 0.3s ease;
+}
+
+.btn-pink:hover {
+    background-color: var(--dark-pink);
+    border-color: var(--dark-pink);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.btn-outline-pink {
+    color: var(--primary-pink);
+    border-color: var(--primary-pink);
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-pink:hover {
+    background-color: var(--primary-pink);
+    border-color: var(--primary-pink);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+/* Navigation Styles */
+.navbar {
+    box-shadow: var(--shadow);
+    padding: 1rem 0;
+}
+
+.bg-pink {
+    background: linear-gradient(135deg, var(--light-pink) 0%, var(--soft-pink) 100%);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: var(--dark-pink) !important;
+}
+
+.brand-text {
+    margin-left: 0.5rem;
+    background: linear-gradient(45deg, var(--primary-pink), var(--accent-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.nav-link {
+    color: var(--text-dark) !important;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--primary-pink) !important;
+}
+
+/* Search Box */
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box input {
+    border-radius: 25px;
+    border: 2px solid var(--rose-pink);
+    padding-right: 50px;
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus {
+    border-color: var(--primary-pink);
+    box-shadow: 0 0 0 0.2rem rgba(255, 105, 180, 0.25);
+}
+
+.search-box button {
+    position: absolute;
+    right: 5px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+}
+
+/* Cart Count Badge */
+.cart-count {
+    background-color: var(--accent-pink);
+    color: var(--white);
+    border-radius: 50%;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, var(--light-pink) 0%, var(--soft-pink) 100%);
+    padding: 5rem 0;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: var(--dark-pink);
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+    line-height: 1.8;
+}
+
+.hero-image img {
+    border-radius: 20px;
+    box-shadow: var(--shadow-hover);
+    transition: transform 0.3s ease;
+}
+
+.hero-image img:hover {
+    transform: scale(1.05);
+}
+
+/* Categories Section */
+.categories-section {
+    background-color: var(--white);
+}
+
+.section-title {
+    color: var(--dark-pink);
+    font-weight: bold;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.category-card {
+    text-align: center;
+    padding: 2rem;
+    border-radius: 20px;
+    background: var(--white);
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    height: 100%;
+    border: 2px solid transparent;
+}
+
+.category-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary-pink);
+}
+
+.category-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary-pink), var(--accent-pink));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: var(--white);
+    font-size: 2rem;
+}
+
+.category-card h4 {
+    color: var(--dark-pink);
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
+
+.category-card p {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+}
+
+/* Products Section */
+.bg-light-pink {
+    background-color: var(--light-pink);
+}
+
+.product-card {
+    background: var(--white);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    height: 100%;
+    border: 2px solid transparent;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary-pink);
+}
+
+.product-image {
+    height: 250px;
+    overflow: hidden;
+    position: relative;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.1);
+}
+
+.product-info {
+    padding: 1.5rem;
+}
+
+.product-title {
+    font-weight: bold;
+    color: var(--dark-pink);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.product-price {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--primary-pink);
+    margin-bottom: 1rem;
+}
+
+.product-rating {
+    color: #ffc107;
+    margin-bottom: 1rem;
+}
+
+.product-description {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 20px;
+    border: none;
+    box-shadow: var(--shadow-hover);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--light-pink), var(--soft-pink));
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
+}
+
+.modal-title {
+    color: var(--dark-pink);
+    font-weight: bold;
+}
+
+/* Cart Styles */
+.cart-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--rose-pink);
+    margin-bottom: 1rem;
+}
+
+.cart-item-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-right: 1rem;
+}
+
+.cart-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cart-item-details {
+    flex: 1;
+}
+
+.cart-item-title {
+    font-weight: bold;
+    color: var(--dark-pink);
+    margin-bottom: 0.5rem;
+}
+
+.cart-item-price {
+    color: var(--primary-pink);
+    font-weight: bold;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quantity-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--primary-pink);
+    background: var(--white);
+    color: var(--primary-pink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quantity-btn:hover {
+    background: var(--primary-pink);
+    color: var(--white);
+}
+
+/* Footer Styles */
+.footer {
+    background: linear-gradient(135deg, #2c1810 0%, #4a4a4a 100%);
+}
+
+.footer h5, .footer h6 {
+    color: var(--primary-pink);
+    margin-bottom: 1rem;
+}
+
+.footer a {
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer a:hover {
+    color: var(--primary-pink) !important;
+}
+
+.social-links a {
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.social-links a:hover {
+    transform: scale(1.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .category-card {
+        margin-bottom: 2rem;
+    }
+    
+    .search-box {
+        margin-bottom: 1rem;
+    }
+    
+    .user-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section {
+        padding: 3rem 0;
+        text-align: center;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .category-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .product-image {
+        height: 200px;
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in {
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--rose-pink);
+    border-radius: 50%;
+    border-top-color: var(--primary-pink);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+
+.toast {
+    background: var(--white);
+    border-left: 4px solid var(--primary-pink);
+    box-shadow: var(--shadow-hover);
+    border-radius: 10px;
+}
+
+/* Form Styles */
+.form-control:focus {
+    border-color: var(--primary-pink);
+    box-shadow: 0 0 0 0.2rem rgba(255, 105, 180, 0.25);
+}
+
+.form-label {
+    color: var(--dark-pink);
+    font-weight: 500;
+}
+
+/* Tab Styles */
+.nav-tabs .nav-link {
+    color: var(--text-light);
+    border: none;
+    border-bottom: 2px solid transparent;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary-pink);
+    border-bottom-color: var(--primary-pink);
+    background: transparent;
+}
+
+.nav-tabs .nav-link:hover {
+    border-bottom-color: var(--rose-pink);
+}
