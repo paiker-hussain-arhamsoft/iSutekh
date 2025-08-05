@@ -37,28 +37,49 @@ beauty-bliss/
 └── docs/             # Documentation
 ```
 
-## Getting Started
+## 🚀 Quick Start
 
-1. Clone the repository
-2. Install dependencies for both backends
-3. Start the servers
-4. Open the frontend in your browser
+### Prerequisites
+- Node.js (v14+)
+- Python 3 (v3.8+)
+- Git
 
-## Installation
-
-### Node.js Backend
+### Installation
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd beauty-bliss
+
+# Run the startup script (recommended)
+./start.sh
+```
+
+Or install manually:
+
+```bash
+# Node.js Backend
 cd node-backend
 npm install
 npm start
-```
 
-### Python Backend
-```bash
+# Python Backend (in new terminal)
 cd python-backend
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
+
+# Frontend (in new terminal)
+cd frontend
+python3 -m http.server 8080
 ```
+
+### Access the Application
+- **Website**: http://localhost:8080
+- **Admin Panel**: http://localhost:8080/admin.html
+- **Admin Login**: admin@beautybliss.com / admin123
+
+📖 **For detailed installation instructions, see [docs/INSTALLATION.md](docs/INSTALLATION.md)**
 
 ## License
 
