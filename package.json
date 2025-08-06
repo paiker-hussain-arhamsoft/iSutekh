@@ -1,0 +1,45 @@
+{
+  "name": "techsolutions-pro-website",
+  "version": "1.0.0",
+  "description": "A modern, responsive IT services website showcasing professional IT solutions",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "dev": "python3 -m http.server 8000",
+    "serve": "python3 -m http.server 8000",
+    "build": "echo 'No build process required for static site'",
+    "test": "echo 'No tests specified'",
+    "lint": "echo 'No linting configured'"
+  },
+  "keywords": [
+    "it-services",
+    "cybersecurity",
+    "cloud-computing",
+    "web-development",
+    "responsive-design",
+    "modern-website",
+    "html5",
+    "css3",
+    "javascript"
+  ],
+  "author": "TechSolutions Pro",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/techsolutions-pro-website.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/techsolutions-pro-website/issues"
+  },
+  "homepage": "https://techsolutionspro.com",
+  "devDependencies": {},
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
