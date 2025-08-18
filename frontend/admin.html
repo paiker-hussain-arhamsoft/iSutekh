@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beauty Bliss Admin - Product Management</title>
+    <title>Nature Republic Admin - Product Management</title>
+    <link rel="icon" type="image/png" href="https://naturerepublic.ae/wp-content/uploads/2024/12/logo-e1733250622771.png">
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -13,55 +14,21 @@
     <link rel="stylesheet" href="admin-styles.css">
 </head>
 <body>
-    <!-- Admin Navigation -->
+    <!-- Admin Header -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
-                <i class="fas fa-crown text-pink"></i>
-                <span class="brand-text">Beauty Bliss Admin</span>
+                <img src="https://naturerepublic.ae/wp-content/uploads/2024/12/logo-e1733250622771.png" alt="Nature Republic" height="35" class="me-2">
+                <span class="brand-text">Nature Republic Admin</span>
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="adminNavbar">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#dashboard" data-section="dashboard">
-                            <i class="fas fa-tachometer-alt"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#products" data-section="products">
-                            <i class="fas fa-box"></i> Products
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#categories" data-section="categories">
-                            <i class="fas fa-tags"></i> Categories
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#orders" data-section="orders">
-                            <i class="fas fa-shopping-bag"></i> Orders
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#users" data-section="users">
-                            <i class="fas fa-users"></i> Users
-                        </a>
-                    </li>
-                </ul>
-                
-                <div class="d-flex align-items-center">
-                    <div class="admin-user me-3">
-                        <span class="text-light">Welcome, Admin</span>
-                    </div>
-                    <button class="btn btn-outline-light btn-sm" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
+            <div class="ms-auto d-flex align-items-center">
+                <div class="admin-user me-3">
+                    <span class="text-light">Welcome, Admin</span>
                 </div>
+                <button class="btn btn-outline-light btn-sm" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
             </div>
         </div>
     </nav>

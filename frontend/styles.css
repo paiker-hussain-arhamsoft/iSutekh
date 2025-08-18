@@ -13,6 +13,22 @@
     --shadow-hover: 0 8px 15px rgba(255, 105, 180, 0.2);
 }
 
+/* Logo Styles */
+.navbar-brand img {
+    max-height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
+.login-logo img,
+.register-logo img {
+    max-height: 80px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 1rem auto;
+}
+
 /* Global Styles */
 * {
     margin: 0;
@@ -127,6 +143,28 @@ body {
     padding: 0.2rem 0.5rem;
     font-size: 0.8rem;
     margin-left: 0.5rem;
+}
+
+/* User Menu Styles */
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-name {
+    color: var(--primary-pink);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.user-name i {
+    margin-right: 0.5rem;
+}
+
+.user-actions {
+    display: flex;
+    gap: 0.5rem;
 }
 
 /* Hero Section */
@@ -529,4 +567,14 @@ body {
 
 .nav-tabs .nav-link:hover {
     border-bottom-color: var(--rose-pink);
+}
+
+/* Category page specific styles */
+.category-card .btn {
+    text-decoration: none;
+    display: inline-block;
+}
+
+.category-card .btn:hover {
+    text-decoration: none;
 }

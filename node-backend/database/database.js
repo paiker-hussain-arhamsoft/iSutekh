@@ -2,14 +2,16 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 // Database file path
-const dbPath = path.join(__dirname, '..', '..', 'database', 'beauty_bliss.db');
+const dbPath = path.join(__dirname, '..', 'nature_republic.db');
 
 // Create database connection
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error opening database:', err.message);
+        console.error('Database path:', dbPath);
     } else {
         console.log('📦 Connected to SQLite database');
+        console.log('Database path:', dbPath);
     }
 });
 
@@ -40,6 +42,7 @@ function initializeDatabase() {
                 name TEXT NOT NULL UNIQUE,
                 description TEXT,
                 icon TEXT,
+                displayOrder INTEGER DEFAULT 0,
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
             )`);
 
@@ -74,10 +77,10 @@ function insertSampleData() {
     return new Promise((resolve, reject) => {
         // Sample categories
         const categories = [
-            { name: 'Skincare', description: 'Nourish your skin with premium products', icon: 'fas fa-magic' },
-            { name: 'Makeup', description: 'Enhance your natural beauty', icon: 'fas fa-palette' },
-            { name: 'Haircare', description: 'Beautiful hair starts with great care', icon: 'fas fa-cut' },
-            { name: 'Fragrances', description: 'Signature scents for every occasion', icon: 'fas fa-spray-can' }
+            { name: 'Skincare', description: 'Nourish your skin with premium products', icon: 'fas fa-magic', displayOrder: 1 },
+            { name: 'Makeup', description: 'Enhance your natural beauty', icon: 'fas fa-palette', displayOrder: 2 },
+            { name: 'Haircare', description: 'Beautiful hair starts with great care', icon: 'fas fa-cut', displayOrder: 3 },
+            { name: 'Fragrances', description: 'Signature scents for every occasion', icon: 'fas fa-spray-can', displayOrder: 4 }
         ];
 
         // Sample products
@@ -173,11 +176,14 @@ function insertSampleData() {
         ];
 
         // Insert categories
-        const categoryStmt = db.prepare('INSERT OR IGNORE INTO categories (name, description, icon) VALUES (?, ?, ?)');
+        console.log('Inserting sample categories...');
+        const categoryStmt = db.prepare('INSERT OR IGNORE INTO categories (name, description, icon, displayOrder) VALUES (?, ?, ?, ?)');
         categories.forEach(category => {
-            categoryStmt.run(category.name, category.description, category.icon);
+            console.log('Inserting category:', category.name);
+            categoryStmt.run(category.name, category.description, category.icon, category.displayOrder);
         });
         categoryStmt.finalize();
+        console.log('Sample categories inserted');
 
         // Insert products
         const productStmt = db.prepare(`INSERT OR IGNORE INTO products 

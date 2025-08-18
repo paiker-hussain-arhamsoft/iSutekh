@@ -19,19 +19,16 @@ const checkoutBtn = document.getElementById('checkoutBtn');
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     loadProducts();
+    loadCategories();
     loadCart();
     setupEventListeners();
-    showToast('Welcome to Beauty Bliss! 💖', 'success');
+    initializeModalForms(); // Initialize modal form handlers
+    checkAuthStatus(); // Check authentication status on page load
+    showToast('Welcome to Nature Republic! 💖', 'success');
 });
 
 // Setup event listeners
 function setupEventListeners() {
-    // Login button
-    loginBtn.addEventListener('click', () => {
-        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-        loginModal.show();
-    });
-
     // Cart button
     cartBtn.addEventListener('click', () => {
         const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
@@ -39,18 +36,31 @@ function setupEventListeners() {
         renderCart();
     });
 
-    // Login form
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
-    
-    // Register form
-    document.getElementById('registerForm').addEventListener('submit', handleRegister);
-
     // Checkout button
     checkoutBtn.addEventListener('click', handleCheckout);
 
+    // Login button (direct handler)
+    if (loginBtn) {
+        loginBtn.addEventListener('click', function(e) {
+            // Only handle if it's the login button (not the dropdown)
+            if (e.target.closest('.btn-outline-pink') && !currentUser) {
+                openLoginModal();
+            }
+        });
+    }
+
     // Search functionality
     const searchInput = document.querySelector('.search-box input');
-    searchInput.addEventListener('input', debounce(handleSearch, 300));
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(handleSearch, 300));
+    }
+    
+    // Listen for category refresh messages from admin panel
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'refreshCategories') {
+            loadCategories();
+        }
+    });
 }
 
 // Load products from API
@@ -65,6 +75,19 @@ async function loadProducts() {
     }
 }
 
+// Load categories from API
+async function loadCategories() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/categories`);
+        const categories = await response.json();
+        renderCategoriesSection(categories);
+        updateCategoryDropdown(categories);
+    } catch (error) {
+        console.error('Error loading categories:', error);
+        showToast('Error loading categories', 'error');
+    }
+}
+
 // Render featured products
 function renderFeaturedProducts() {
     const featured = products.filter(product => product.featured).slice(0, 8);
@@ -76,22 +99,67 @@ function renderFeaturedProducts() {
                     <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x300/ff69b4/ffffff?text=Beauty+Product'">
                 </div>
                 <div class="product-info">
-                    <h5 class="product-title">${product.name}</h5>
+                    <h5 class="product-title">
+                        <a href="product.html?id=${product.id}" class="text-decoration-none text-dark">
+                            ${product.name}
+                        </a>
+                    </h5>
                     <div class="product-rating">
                         ${generateStars(product.rating)}
                         <span class="ms-2">(${product.reviewCount})</span>
                     </div>
                     <p class="product-description">${product.description.substring(0, 80)}...</p>
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="product-price">$${product.price.toFixed(2)}</span>
-                        <button class="btn btn-pink btn-sm" onclick="addToCart(${product.id})">
-                            <i class="fas fa-plus"></i> Add to Cart
-                        </button>
+                        <span class="product-price">AED ${product.price.toFixed(2)}</span>
+                        <div class="d-flex gap-2">
+                            <a href="product.html?id=${product.id}" class="btn btn-outline-pink btn-sm">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            <button class="btn btn-pink btn-sm" onclick="addToCart(${product.id})">
+                                <i class="fas fa-plus"></i> Add to Cart
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     `).join('');
+}
+
+// Render categories section
+function renderCategoriesSection(categories) {
+    const categoriesContainer = document.querySelector('.categories-section .row');
+    if (!categoriesContainer) return;
+    
+    categoriesContainer.innerHTML = categories.map(category => `
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="${category.icon || 'fas fa-tag'}"></i>
+                </div>
+                <h4>${category.name}</h4>
+                <p>${category.description || 'Explore our amazing products'}</p>
+                <a href="category.html?category=${encodeURIComponent(category.name)}" class="btn btn-outline-pink btn-sm">
+                    View Products
+                </a>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Update category dropdown in navigation
+function updateCategoryDropdown(categories) {
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+    if (!dropdownMenu) return;
+    
+    dropdownMenu.innerHTML = categories.map(category => `
+        <li><a class="dropdown-item" href="category.html?category=${encodeURIComponent(category.name)}">${category.name}</a></li>
+    `).join('');
+}
+
+// Filter products by category - redirect to category page
+function filterByCategory(categoryName) {
+    window.location.href = `category.html?category=${encodeURIComponent(categoryName)}`;
 }
 
 // Generate star rating HTML
@@ -177,7 +245,7 @@ function renderCart() {
             </div>
             <div class="cart-item-details">
                 <h6 class="cart-item-title">${item.name}</h6>
-                <p class="cart-item-price">$${item.price.toFixed(2)}</p>
+                <p class="cart-item-price">AED ${item.price.toFixed(2)}</p>
             </div>
             <div class="quantity-controls">
                 <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
@@ -185,7 +253,7 @@ function renderCart() {
                 <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
             </div>
             <div class="ms-3">
-                <span class="fw-bold">$${(item.price * item.quantity).toFixed(2)}</span>
+                <span class="fw-bold">AED ${(item.price * item.quantity).toFixed(2)}</span>
                 <button class="btn btn-sm btn-outline-danger ms-2" onclick="removeFromCart(${item.id})">
                     <i class="fas fa-trash"></i>
                 </button>
@@ -205,88 +273,21 @@ function updateCartCount() {
 
 // Save cart to localStorage
 function saveCart() {
-    localStorage.setItem('beautyBlissCart', JSON.stringify(cart));
+    localStorage.setItem('natureRepublicCart', JSON.stringify(cart));
 }
 
 // Load cart from localStorage
 function loadCart() {
-    const savedCart = localStorage.getItem('beautyBlissCart');
+    const savedCart = localStorage.getItem('natureRepublicCart');
     if (savedCart) {
         cart = JSON.parse(savedCart);
         updateCartCount();
     }
 }
 
-// Handle login
-async function handleLogin(event) {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const email = formData.get('email');
-    const password = formData.get('password');
 
-    try {
-        const response = await fetch(`${PYTHON_API_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password })
-        });
 
-        const data = await response.json();
-        
-        if (response.ok) {
-            currentUser = data.user;
-            localStorage.setItem('beautyBlissUser', JSON.stringify(data.user));
-            localStorage.setItem('beautyBlissToken', data.token);
-            
-            loginBtn.innerHTML = `<i class="fas fa-user"></i> ${data.user.name}`;
-            showToast('Login successful!', 'success');
-            
-            const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
-            modal.hide();
-        } else {
-            showToast(data.message || 'Login failed', 'error');
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showToast('Login failed. Please try again.', 'error');
-    }
-}
 
-// Handle register
-async function handleRegister(event) {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const name = formData.get('name');
-    const email = formData.get('email');
-    const password = formData.get('password');
-
-    try {
-        const response = await fetch(`${PYTHON_API_URL}/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name, email, password })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            showToast('Registration successful! Please login.', 'success');
-            // Switch to login tab
-            const loginTab = document.querySelector('#authTabs .nav-link');
-            const loginTabInstance = new bootstrap.Tab(loginTab);
-            loginTabInstance.show();
-        } else {
-            showToast(data.message || 'Registration failed', 'error');
-        }
-    } catch (error) {
-        console.error('Registration error:', error);
-        showToast('Registration failed. Please try again.', 'error');
-    }
-}
 
 // Handle checkout
 async function handleCheckout() {
@@ -295,8 +296,8 @@ async function handleCheckout() {
         const cartModal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
         cartModal.hide();
         
-        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-        loginModal.show();
+        // Open login modal instead of redirecting
+        openLoginModal();
         return;
     }
 
@@ -310,7 +311,7 @@ async function handleCheckout() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('beautyBlissToken')}`
+                'Authorization': `Bearer ${localStorage.getItem('natureRepublicToken')}`
             },
             body: JSON.stringify({
                 items: cart,
@@ -361,11 +362,11 @@ function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast show`;
     toast.innerHTML = `
-        <div class="toast-header">
-            <i class="fas fa-${getToastIcon(type)} text-${getToastColor(type)} me-2"></i>
-            <strong class="me-auto">Beauty Bliss</strong>
-            <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
-        </div>
+                 <div class="toast-header">
+             <i class="fas fa-${getToastIcon(type)} text-${getToastColor(type)} me-2"></i>
+             <strong class="me-auto">Nature Republic</strong>
+             <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+         </div>
         <div class="toast-body">
             ${message}
         </div>
@@ -423,14 +424,181 @@ function debounce(func, wait) {
 
 // Check if user is logged in on page load
 function checkAuthStatus() {
-    const user = localStorage.getItem('beautyBlissUser');
-    const token = localStorage.getItem('beautyBlissToken');
+    const user = localStorage.getItem('natureRepublicUser');
+    const token = localStorage.getItem('natureRepublicToken');
     
     if (user && token) {
-        currentUser = JSON.parse(user);
-        loginBtn.innerHTML = `<i class="fas fa-user"></i> ${currentUser.name}`;
+        try {
+            currentUser = JSON.parse(user);
+            updateNavigationForUser();
+        } catch (e) {
+            // Invalid user data, clear it
+            localStorage.removeItem('natureRepublicUser');
+            localStorage.removeItem('natureRepublicToken');
+        }
     }
 }
 
-// Initialize auth status
-checkAuthStatus();
+// Update navigation for authenticated user
+function updateNavigationForUser() {
+    const loginBtn = document.getElementById('loginBtn');
+    if (currentUser) {
+        loginBtn.innerHTML = `
+            <div class="user-menu">
+                <span class="user-name">
+                    <i class="fas fa-user"></i> ${currentUser.name}
+                </span>
+                <div class="user-actions">
+                    <button class="btn btn-sm btn-outline-pink" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        `;
+    } else {
+        loginBtn.innerHTML = `
+            <button class="btn btn-outline-pink" onclick="openLoginModal()">
+                <i class="fas fa-user"></i> Login
+            </button>
+        `;
+    }
+}
+
+// User profile functions
+function viewProfile() {
+    if (!currentUser) return;
+    
+    showToast(`Welcome back, ${currentUser.name}!`, 'success');
+    // You can implement a profile modal here
+}
+
+function viewOrders() {
+    if (!currentUser) return;
+    
+    showToast('Orders feature coming soon!', 'info');
+    // You can implement an orders view here
+}
+
+function logout() {
+    localStorage.removeItem('natureRepublicUser');
+    localStorage.removeItem('natureRepublicToken');
+    currentUser = null;
+    updateNavigationForUser();
+    showToast('Logged out successfully', 'success');
+}
+
+// Modal handling functions
+function openLoginModal() {
+    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+    loginModal.show();
+}
+
+// Initialize modal form handlers
+function initializeModalForms() {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch('http://localhost:5000/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Store user data and token
+                    localStorage.setItem('natureRepublicUser', JSON.stringify(data.user));
+                    localStorage.setItem('natureRepublicToken', data.token);
+                    
+                    // Update current user
+                    currentUser = data.user;
+                    
+                    // Update navigation
+                    updateNavigationForUser();
+                    
+                    // Close modal
+                    const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+                    loginModal.hide();
+                    
+                    // Clear form
+                    loginForm.reset();
+                    
+                    // Show success message
+                    showToast(`Welcome back, ${data.user.name}!`, 'success');
+                    
+                    // Redirect admin to admin panel
+                    if (data.user.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    }
+                } else {
+                    const errorData = await response.json();
+                    showToast(errorData.message || 'Login failed', 'error');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showToast('Login failed. Please try again.', 'error');
+            }
+        });
+    }
+    
+    if (registerForm) {
+        registerForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            try {
+                const response = await fetch('http://localhost:5000/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Store user data and token
+                    localStorage.setItem('natureRepublicUser', JSON.stringify(data.user));
+                    localStorage.setItem('natureRepublicToken', data.token);
+                    
+                    // Update current user
+                    currentUser = data.user;
+                    
+                    // Update navigation
+                    updateNavigationForUser();
+                    
+                    // Close modal
+                    const registerModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+                    registerModal.hide();
+                    
+                    // Clear form
+                    registerForm.reset();
+                    
+                    // Show success message
+                    showToast(`Welcome to Nature Republic, ${data.user.name}!`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    showToast(errorData.message || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showToast('Registration failed. Please try again.', 'error');
+            }
+        });
+    }
+}

@@ -17,6 +17,21 @@
     --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
 }
 
+/* Logo Styles */
+.navbar-brand img {
+    max-height: 35px;
+    width: auto;
+    object-fit: contain;
+}
+
+.login-logo img {
+    max-height: 80px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 1rem auto;
+}
+
 /* Global Styles */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -312,6 +327,28 @@ main {
     transition: all 0.3s ease;
     border: 2px solid transparent;
     text-align: center;
+    margin-bottom: 1rem;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Debug styling to make sure categories are visible */
+#categoriesGrid {
+    min-height: 200px;
+    border: 2px dashed #ccc;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+#categoriesGrid:empty::after {
+    content: "Categories grid is empty";
+    display: block;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 2rem;
 }
 
 .category-card:hover {

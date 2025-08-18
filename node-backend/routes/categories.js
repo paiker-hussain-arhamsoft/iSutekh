@@ -5,11 +5,13 @@ const { runQuery, getQuery, allQuery } = require('../database/database');
 // Get all categories
 router.get('/', async (req, res) => {
     try {
-        const categories = await allQuery('SELECT * FROM categories ORDER BY name ASC');
+        console.log('GET /categories - Fetching categories...');
+        const categories = await allQuery('SELECT * FROM categories ORDER BY displayOrder ASC, name ASC');
+        console.log('Categories fetched:', categories);
         res.json(categories);
     } catch (error) {
         console.error('Error fetching categories:', error);
-        res.status(500).json({ error: 'Failed to fetch categories' });
+        res.status(500).json({ error: 'Failed to fetch categories', details: error.message });
     }
 });
 
@@ -33,27 +35,34 @@ router.get('/:id', async (req, res) => {
 // Create new category
 router.post('/', async (req, res) => {
     try {
+        console.log('POST /categories - Request body:', req.body);
         const { name, description, icon } = req.body;
 
         // Validation
         if (!name) {
+            console.log('Validation failed: name is required');
             return res.status(400).json({ error: 'Category name is required' });
         }
+
+        console.log('Creating category:', { name, description, icon });
 
         // Check if category already exists
         const existingCategory = await getQuery('SELECT * FROM categories WHERE name = ?', [name]);
         if (existingCategory) {
+            console.log('Category already exists:', existingCategory);
             return res.status(400).json({ error: 'Category with this name already exists' });
         }
 
         const sql = 'INSERT INTO categories (name, description, icon) VALUES (?, ?, ?)';
         const result = await runQuery(sql, [name, description, icon]);
+        console.log('Category inserted with ID:', result.id);
 
         const newCategory = await getQuery('SELECT * FROM categories WHERE id = ?', [result.id]);
+        console.log('New category created:', newCategory);
         res.status(201).json(newCategory);
     } catch (error) {
         console.error('Error creating category:', error);
-        res.status(500).json({ error: 'Failed to create category' });
+        res.status(500).json({ error: 'Failed to create category', details: error.message });
     }
 });
 
@@ -163,10 +172,16 @@ router.get('/stats/all', async (req, res) => {
                     [category.name]
                 );
 
+                const totalValue = await allQuery(
+                    'SELECT SUM(price * stock) as total FROM products WHERE category = ? AND status = "active"',
+                    [category.name]
+                );
+
                 return {
                     ...category,
                     productCount: productCount[0].count,
-                    featuredCount: featuredCount[0].count
+                    featuredCount: featuredCount[0].count,
+                    totalValue: totalValue[0].total || 0
                 };
             })
         );
@@ -175,6 +190,56 @@ router.get('/stats/all', async (req, res) => {
     } catch (error) {
         console.error('Error fetching category stats:', error);
         res.status(500).json({ error: 'Failed to fetch category stats' });
+    }
+});
+
+// Get category statistics for dashboard
+router.get('/stats/dashboard', async (req, res) => {
+    try {
+        const totalCategories = await allQuery('SELECT COUNT(*) as count FROM categories');
+        const totalProducts = await allQuery('SELECT COUNT(*) as count FROM products WHERE status = "active"');
+        const totalValue = await allQuery('SELECT SUM(price * stock) as total FROM products WHERE status = "active"');
+        
+        const topCategories = await allQuery(`
+            SELECT c.name, c.description, COUNT(p.id) as productCount, 
+                   SUM(p.price * p.stock) as totalValue
+            FROM categories c
+            LEFT JOIN products p ON c.name = p.category AND p.status = 'active'
+            GROUP BY c.id, c.name, c.description
+            ORDER BY productCount DESC
+            LIMIT 5
+        `);
+
+        res.json({
+            totalCategories: totalCategories[0].count,
+            totalProducts: totalProducts[0].count,
+            totalValue: totalValue[0].total || 0,
+            topCategories: topCategories
+        });
+    } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+    }
+});
+
+// Update category order
+router.put('/order', async (req, res) => {
+    try {
+        const { categoryIds } = req.body;
+        
+        if (!Array.isArray(categoryIds)) {
+            return res.status(400).json({ error: 'Category IDs array is required' });
+        }
+        
+        // Update the order of categories
+        for (let i = 0; i < categoryIds.length; i++) {
+            await runQuery('UPDATE categories SET displayOrder = ? WHERE id = ?', [i + 1, categoryIds[i]]);
+        }
+        
+        res.json({ message: 'Category order updated successfully' });
+    } catch (error) {
+        console.error('Error updating category order:', error);
+        res.status(500).json({ error: 'Failed to update category order' });
     }
 });
 

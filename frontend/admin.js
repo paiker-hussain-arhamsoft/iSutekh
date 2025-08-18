@@ -12,6 +12,14 @@ const PYTHON_API_URL = 'http://localhost:5000';
 
 // Initialize admin panel
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Admin panel initializing...');
+    
+    // Check if user is authenticated
+    if (!checkAuth()) {
+        window.location.href = 'admin-login.html';
+        return;
+    }
+    
     setupNavigation();
     loadDashboardData();
     loadProducts();
@@ -19,7 +27,46 @@ document.addEventListener('DOMContentLoaded', function() {
     loadOrders();
     loadUsers();
     setupEventListeners();
+    
+    // For testing: show categories section after a delay
+    setTimeout(() => {
+        console.log('Testing: switching to categories section');
+        showSection('categories');
+        
+        // Test categories loading again
+        console.log('Testing: reloading categories');
+        loadCategories();
+    }, 2000);
 });
+
+// Check authentication
+function checkAuth() {
+    const user = localStorage.getItem('natureRepublicUser');
+    const token = localStorage.getItem('natureRepublicToken');
+    
+    if (!user || !token) {
+        return false;
+    }
+    
+    try {
+        const userData = JSON.parse(user);
+        if (userData.role !== 'admin') {
+            return false;
+        }
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+// Get auth headers for API requests
+function getAuthHeaders() {
+    const token = localStorage.getItem('natureRepublicToken');
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+}
 
 // Setup navigation
 function setupNavigation() {
@@ -35,6 +82,8 @@ function setupNavigation() {
 
 // Show section
 function showSection(sectionName) {
+    console.log('Showing section:', sectionName);
+    
     // Hide all sections
     document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
@@ -46,7 +95,13 @@ function showSection(sectionName) {
     });
     
     // Show selected section
-    document.getElementById(sectionName).classList.add('active');
+    const targetSection = document.getElementById(sectionName);
+    if (targetSection) {
+        targetSection.classList.add('active');
+        console.log('Section', sectionName, 'is now active');
+    } else {
+        console.error('Section', sectionName, 'not found!');
+    }
     
     // Add active class to clicked nav link
     document.querySelectorAll(`[data-section="${sectionName}"]`).forEach(link => {
@@ -74,7 +129,7 @@ async function loadDashboardData() {
         document.getElementById('totalProducts').textContent = stats.totalProducts || 0;
         document.getElementById('totalOrders').textContent = stats.totalOrders || 0;
         document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
-        document.getElementById('totalRevenue').textContent = `$${(stats.totalRevenue || 0).toFixed(2)}`;
+        document.getElementById('totalRevenue').textContent = `AED ${(stats.totalRevenue || 0).toFixed(2)}`;
         
         // Load recent orders
         loadRecentOrders();
@@ -94,7 +149,7 @@ async function loadProducts() {
         const response = await fetch(`${API_BASE_URL}/api/products`);
         products = await response.json();
         renderProductsTable();
-        populateCategoryFilter();
+        // populateCategoryFilter will be called after categories are loaded
     } catch (error) {
         console.error('Error loading products:', error);
         showToast('Error loading products', 'error');
@@ -133,7 +188,7 @@ function renderProductsTable() {
             <td>
                 <span class="badge bg-light text-dark">${product.category}</span>
             </td>
-            <td><strong>$${product.price.toFixed(2)}</strong></td>
+            <td><strong>AED ${product.price.toFixed(2)}</strong></td>
             <td>
                 <span class="badge ${product.stock > 10 ? 'bg-success' : product.stock > 0 ? 'bg-warning' : 'bg-danger'}">
                     ${product.stock}
@@ -208,7 +263,7 @@ function renderFilteredProducts(filteredProducts) {
             <td>
                 <span class="badge bg-light text-dark">${product.category}</span>
             </td>
-            <td><strong>$${product.price.toFixed(2)}</strong></td>
+            <td><strong>AED ${product.price.toFixed(2)}</strong></td>
             <td>
                 <span class="badge ${product.stock > 10 ? 'bg-success' : product.stock > 0 ? 'bg-warning' : 'bg-danger'}">
                     ${product.stock}
@@ -239,10 +294,9 @@ function populateCategoryFilter() {
     const categoryFilter = document.getElementById('categoryFilter');
     const productCategory = document.getElementById('productCategory');
     
-    const uniqueCategories = [...new Set(products.map(p => p.category))];
-    
-    const categoryOptions = uniqueCategories.map(category => 
-        `<option value="${category}">${category}</option>`
+    // Use categories from backend instead of extracting from products
+    const categoryOptions = categories.map(category => 
+        `<option value="${category.name}">${category.name}</option>`
     ).join('');
     
     categoryFilter.innerHTML = '<option value="">All Categories</option>' + categoryOptions;
@@ -305,7 +359,7 @@ function viewProduct(productId) {
                                 <p class="text-muted">${product.description}</p>
                                 <div class="row">
                                     <div class="col-6">
-                                        <strong>Price:</strong> $${product.price.toFixed(2)}
+                                        <strong>Price:</strong> AED ${product.price.toFixed(2)}
                                     </div>
                                     <div class="col-6">
                                         <strong>Stock:</strong> ${product.stock}
@@ -424,19 +478,43 @@ async function confirmDelete() {
     if (!itemToDelete) return;
     
     try {
-        const response = await fetch(`${API_BASE_URL}/api/products/${itemToDelete.id}`, {
-            method: 'DELETE'
-        });
-        
-        if (response.ok) {
-            showToast('Product deleted successfully!', 'success');
-            loadProducts();
+        let response;
+        if (itemToDelete.type === 'category') {
+            response = await fetch(`${API_BASE_URL}/api/categories/${itemToDelete.id}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                showToast('Category deleted successfully!', 'success');
+                loadCategories();
+                
+                // Refresh the main frontend categories if it's open in another tab
+                if (window.opener && !window.opener.closed) {
+                    try {
+                        window.opener.postMessage({ type: 'refreshCategories' }, '*');
+                    } catch (e) {
+                        // Ignore if main window is not accessible
+                    }
+                }
+            } else {
+                const error = await response.json();
+                showToast(error.error || 'Error deleting category', 'error');
+            }
         } else {
-            showToast('Error deleting product', 'error');
+            response = await fetch(`${API_BASE_URL}/api/products/${itemToDelete.id}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                showToast('Product deleted successfully!', 'success');
+                loadProducts();
+            } else {
+                showToast('Error deleting product', 'error');
+            }
         }
     } catch (error) {
-        console.error('Error deleting product:', error);
-        showToast('Error deleting product', 'error');
+        console.error('Error deleting item:', error);
+        showToast('Error deleting item', 'error');
     }
     
     const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
@@ -447,9 +525,20 @@ async function confirmDelete() {
 // Load categories
 async function loadCategories() {
     try {
+        console.log('Loading categories...');
         const response = await fetch(`${API_BASE_URL}/api/categories`);
+        console.log('Categories response:', response);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         categories = await response.json();
+        console.log('Categories loaded:', categories);
+        
         renderCategoriesGrid();
+        // Populate category filters after categories are loaded
+        populateCategoryFilter();
     } catch (error) {
         console.error('Error loading categories:', error);
         showToast('Error loading categories', 'error');
@@ -458,9 +547,18 @@ async function loadCategories() {
 
 // Render categories grid
 function renderCategoriesGrid() {
+    console.log('Rendering categories grid...');
     const grid = document.getElementById('categoriesGrid');
+    console.log('Grid element:', grid);
+    console.log('Categories to render:', categories);
+    
+    if (!grid) {
+        console.error('Categories grid element not found!');
+        return;
+    }
     
     if (categories.length === 0) {
+        console.log('No categories to display, showing empty state');
         grid.innerHTML = `
             <div class="col-12">
                 <div class="empty-state">
@@ -473,7 +571,8 @@ function renderCategoriesGrid() {
         return;
     }
     
-    grid.innerHTML = categories.map(category => `
+    console.log('Rendering', categories.length, 'categories');
+    const categoriesHTML = categories.map(category => `
         <div class="col-md-4 col-lg-3 mb-4">
             <div class="category-card">
                 <div class="category-icon">
@@ -492,6 +591,10 @@ function renderCategoriesGrid() {
             </div>
         </div>
     `).join('');
+    
+    console.log('Categories HTML:', categoriesHTML);
+    grid.innerHTML = categoriesHTML;
+    console.log('Categories grid rendered');
 }
 
 // Open add category modal
@@ -549,14 +652,33 @@ async function saveCategory() {
         });
         
         if (response.ok) {
+            const result = await response.json();
+            
+            // If editing and category name changed, update products
+            if (isEdit) {
+                const oldCategory = categories.find(c => c.id === categoryId);
+                if (oldCategory && oldCategory.name !== categoryData.name) {
+                    await updateProductCategories(oldCategory.name, categoryData.name);
+                }
+            }
+            
             showToast(`Category ${isEdit ? 'updated' : 'created'} successfully!`, 'success');
             loadCategories();
+            
+            // Refresh the main frontend categories if it's open in another tab
+            if (window.opener && !window.opener.closed) {
+                try {
+                    window.opener.postMessage({ type: 'refreshCategories' }, '*');
+                } catch (e) {
+                    // Ignore if main window is not accessible
+                }
+            }
             
             const modal = bootstrap.Modal.getInstance(document.getElementById('categoryModal'));
             modal.hide();
         } else {
             const error = await response.json();
-            showToast(error.message || 'Error saving category', 'error');
+            showToast(error.error || 'Error saving category', 'error');
         }
     } catch (error) {
         console.error('Error saving category:', error);
@@ -566,9 +688,53 @@ async function saveCategory() {
 
 // Delete category
 function deleteCategory(categoryId) {
+    const category = categories.find(c => c.id === categoryId);
+    if (!category) return;
+    
+    // Check if category has products
+    const productsInCategory = products.filter(p => p.category === category.name);
+    
+    if (productsInCategory.length > 0) {
+        showToast(`Cannot delete category "${category.name}" - it has ${productsInCategory.length} product(s). Please reassign or delete the products first.`, 'error');
+        return;
+    }
+    
     itemToDelete = { type: 'category', id: categoryId };
     const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
     modal.show();
+}
+
+// Bulk update product categories (when a category is renamed)
+async function updateProductCategories(oldCategoryName, newCategoryName) {
+    try {
+        const productsToUpdate = products.filter(p => p.category === oldCategoryName);
+        
+        if (productsToUpdate.length === 0) return;
+        
+        // Update each product's category
+        for (const product of productsToUpdate) {
+            const response = await fetch(`${API_BASE_URL}/api/products/${product.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...product,
+                    category: newCategoryName
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to update product ${product.name}`);
+            }
+        }
+        
+        showToast(`Updated ${productsToUpdate.length} product(s) to new category "${newCategoryName}"`, 'success');
+        loadProducts(); // Refresh products list
+    } catch (error) {
+        console.error('Error updating product categories:', error);
+        showToast('Error updating product categories', 'error');
+    }
 }
 
 // Load orders
@@ -606,7 +772,7 @@ function renderOrdersTable() {
             <td><strong>#${order.id}</strong></td>
             <td>${order.customerName || 'Guest'}</td>
             <td>${order.items.length} items</td>
-            <td><strong>$${order.total.toFixed(2)}</strong></td>
+            <td><strong>AED ${order.total.toFixed(2)}</strong></td>
             <td>
                 <span class="badge ${getOrderStatusBadge(order.status)}">
                     ${order.status}
@@ -640,9 +806,26 @@ function getOrderStatusBadge(status) {
 // Load users
 async function loadUsers() {
     try {
-        const response = await fetch(`${PYTHON_API_URL}/users`);
-        users = await response.json();
-        renderUsersTable();
+        const response = await fetch(`${PYTHON_API_URL}/users`, {
+            headers: getAuthHeaders()
+        });
+        
+        if (response.status === 401) {
+            // Token expired or invalid
+                    localStorage.removeItem('natureRepublicUser');
+        localStorage.removeItem('natureRepublicToken');
+            window.location.href = 'admin-login.html';
+            return;
+        }
+        
+        if (response.ok) {
+            const data = await response.json();
+            users = data.users || [];
+            renderUsersTable();
+        } else {
+            const error = await response.json();
+            showToast(error.error || 'Error loading users', 'error');
+        }
     } catch (error) {
         console.error('Error loading users:', error);
         showToast('Error loading users', 'error');
@@ -712,7 +895,7 @@ async function loadRecentOrders() {
                     <br><small class="text-muted">${order.customerName || 'Guest'}</small>
                 </div>
                 <div class="text-end">
-                    <strong>$${order.total.toFixed(2)}</strong>
+                    <strong>AED ${order.total.toFixed(2)}</strong>
                     <br><small class="badge ${getOrderStatusBadge(order.status)}">${order.status}</small>
                 </div>
             </div>
@@ -757,11 +940,11 @@ function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast show`;
     toast.innerHTML = `
-        <div class="toast-header">
-            <i class="fas fa-${getToastIcon(type)} text-${getToastColor(type)} me-2"></i>
-            <strong class="me-auto">Admin Panel</strong>
-            <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
-        </div>
+                 <div class="toast-header">
+             <i class="fas fa-${getToastIcon(type)} text-${getToastColor(type)} me-2"></i>
+             <strong class="me-auto">Nature Republic Admin</strong>
+             <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+         </div>
         <div class="toast-body">
             ${message}
         </div>
@@ -806,7 +989,7 @@ function getToastColor(type) {
 
 // Logout function
 function logout() {
-    localStorage.removeItem('beautyBlissUser');
-    localStorage.removeItem('beautyBlissToken');
-    window.location.href = 'index.html';
+    localStorage.removeItem('natureRepublicUser');
+    localStorage.removeItem('natureRepublicToken');
+    window.location.href = 'admin-login.html';
 }

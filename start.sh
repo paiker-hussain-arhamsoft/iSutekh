@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🌸 Beauty Bliss Ecommerce Website Startup Script 🌸"
+echo "🌸 Nature Republic Ecommerce Website Startup Script 🌸"
 echo "=================================================="
 
 # Check if Node.js is installed
@@ -76,7 +76,7 @@ echo "🐍 Python API: http://localhost:5000"
 echo "👑 Admin Panel: http://localhost:8080/admin.html"
 echo ""
 echo "👤 Admin credentials:"
-echo "   Email: admin@beautybliss.com"
+echo "   Email: admin@naturerepublic.com"
 echo "   Password: admin123"
 echo ""
 echo "Press Ctrl+C to stop all servers"

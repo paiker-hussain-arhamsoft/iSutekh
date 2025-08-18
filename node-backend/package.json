@@ -1,7 +1,7 @@
 {
-  "name": "beauty-bliss-backend",
+  "name": "nature-republic-backend",
   "version": "1.0.0",
-  "description": "Node.js backend for Beauty Bliss ecommerce website",
+  "description": "Node.js backend for Nature Republic ecommerce website",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -15,7 +15,7 @@
     "nodejs",
     "express"
   ],
-  "author": "Beauty Bliss Team",
+  "author": "Nature Republic Team",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
