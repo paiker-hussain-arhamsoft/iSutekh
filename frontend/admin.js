@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadCategories();
     loadOrders();
     loadUsers();
+    loadSales();
     setupEventListeners();
     
     // For testing: show categories section after a delay
@@ -993,3 +994,255 @@ function logout() {
     localStorage.removeItem('natureRepublicToken');
     window.location.href = 'admin-login.html';
 }
+
+// Sales Management Functions
+let sales = [];
+
+// Load sales data
+async function loadSales() {
+    try {
+        // For now, we'll use localStorage to store sales
+        const savedSales = localStorage.getItem('natureRepublicSales');
+        sales = savedSales ? JSON.parse(savedSales) : [];
+        
+        renderSalesTable();
+        updateCurrentSaleInfo();
+        updateSaleStatistics();
+    } catch (error) {
+        console.error('Error loading sales:', error);
+        showToast('Error loading sales', 'error');
+    }
+}
+
+// Render sales table
+function renderSalesTable() {
+    const tbody = document.getElementById('salesTableBody');
+    
+    if (sales.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No sales found</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = sales.map(sale => `
+        <tr>
+            <td>${sale.name}</td>
+            <td><span class="badge bg-success">${sale.discount}%</span></td>
+            <td>${new Date(sale.startDate).toLocaleDateString()}</td>
+            <td>${new Date(sale.endDate).toLocaleDateString()}</td>
+            <td>
+                <span class="badge ${sale.active ? 'bg-success' : 'bg-secondary'}">
+                    ${sale.active ? 'Active' : 'Inactive'}
+                </span>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="editSale('${sale.id}')">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteSale('${sale.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Update current sale info
+function updateCurrentSaleInfo() {
+    const container = document.getElementById('currentSaleInfo');
+    const activeSale = sales.find(sale => sale.active);
+    
+    if (!activeSale) {
+        container.innerHTML = '<p class="text-muted">No active sale at the moment.</p>';
+        return;
+    }
+    
+    const timeLeft = new Date(activeSale.endDate) - new Date();
+    const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
+    
+    container.innerHTML = `
+        <h5 class="text-success">${activeSale.name}</h5>
+        <p class="mb-2">${activeSale.description}</p>
+        <div class="d-flex justify-content-between">
+            <span class="badge bg-success">${activeSale.discount}% OFF</span>
+            <span class="text-muted">${daysLeft} days left</span>
+        </div>
+        <button class="btn btn-sm btn-outline-warning mt-2" onclick="endSale('${activeSale.id}')">
+            End Sale
+        </button>
+    `;
+}
+
+// Update sale statistics
+function updateSaleStatistics() {
+    const totalSales = sales.length;
+    const revenue = sales.reduce((sum, sale) => sum + (sale.revenue || 0), 0);
+    
+    document.getElementById('totalSales').textContent = totalSales;
+    document.getElementById('revenue').textContent = `$${revenue.toFixed(2)}`;
+}
+
+// Open sale modal
+function openSaleModal(saleId = null) {
+    const modal = new bootstrap.Modal(document.getElementById('saleModal'));
+    const form = document.getElementById('saleForm');
+    const title = document.getElementById('saleModalTitle');
+    
+    // Reset form
+    form.reset();
+    
+    if (saleId) {
+        // Edit existing sale
+        const sale = sales.find(s => s.id === saleId);
+        if (sale) {
+            title.textContent = 'Edit Sale';
+            document.getElementById('saleId').value = sale.id;
+            document.getElementById('saleName').value = sale.name;
+            document.getElementById('saleDiscount').value = sale.discount;
+            document.getElementById('saleDescription').value = sale.description;
+            document.getElementById('saleStartDate').value = sale.startDate.slice(0, 16);
+            document.getElementById('saleEndDate').value = sale.endDate.slice(0, 16);
+        }
+    } else {
+        // New sale
+        title.textContent = 'Start New Sale';
+        document.getElementById('saleId').value = '';
+        
+        // Set default dates (start now, end in 7 days)
+        const now = new Date();
+        const endDate = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+        
+        document.getElementById('saleStartDate').value = now.toISOString().slice(0, 16);
+        document.getElementById('saleEndDate').value = endDate.toISOString().slice(0, 16);
+    }
+    
+    // Load products for selection
+    loadProductsForSale();
+    
+    modal.show();
+}
+
+// Load products for sale selection
+function loadProductsForSale() {
+    const select = document.getElementById('saleProducts');
+    select.innerHTML = '<option value="">Loading products...</option>';
+    
+    if (products.length > 0) {
+        select.innerHTML = products.map(product => 
+            `<option value="${product.id}">${product.name} - $${product.price}</option>`
+        ).join('');
+    }
+}
+
+// Save sale
+function saveSale() {
+    const form = document.getElementById('saleForm');
+    const formData = new FormData(form);
+    
+    const saleData = {
+        id: document.getElementById('saleId').value || generateId(),
+        name: document.getElementById('saleName').value,
+        discount: parseInt(document.getElementById('saleDiscount').value),
+        description: document.getElementById('saleDescription').value,
+        startDate: document.getElementById('saleStartDate').value,
+        endDate: document.getElementById('saleEndDate').value,
+        products: Array.from(document.getElementById('saleProducts').selectedOptions).map(opt => opt.value),
+        active: true,
+        createdAt: new Date().toISOString(),
+        revenue: 0
+    };
+    
+    // Validate dates
+    if (new Date(saleData.startDate) >= new Date(saleData.endDate)) {
+        showToast('End date must be after start date', 'error');
+        return;
+    }
+    
+    // Deactivate other sales
+    sales.forEach(sale => sale.active = false);
+    
+    // Add or update sale
+    const existingIndex = sales.findIndex(s => s.id === saleData.id);
+    if (existingIndex >= 0) {
+        sales[existingIndex] = saleData;
+    } else {
+        sales.push(saleData);
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('natureRepublicSales', JSON.stringify(sales));
+    
+    // Update UI
+    renderSalesTable();
+    updateCurrentSaleInfo();
+    updateSaleStatistics();
+    
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('saleModal'));
+    modal.hide();
+    
+    showToast('Sale saved successfully!', 'success');
+}
+
+// Edit sale
+function editSale(saleId) {
+    openSaleModal(saleId);
+}
+
+// Delete sale
+function deleteSale(saleId) {
+    if (confirm('Are you sure you want to delete this sale?')) {
+        sales = sales.filter(s => s.id !== saleId);
+        localStorage.setItem('natureRepublicSales', JSON.stringify(sales));
+        
+        renderSalesTable();
+        updateCurrentSaleInfo();
+        updateSaleStatistics();
+        
+        showToast('Sale deleted successfully', 'success');
+    }
+}
+
+// End sale
+function endSale(saleId) {
+    const sale = sales.find(s => s.id === saleId);
+    if (sale) {
+        sale.active = false;
+        localStorage.setItem('natureRepublicSales', JSON.stringify(sales));
+        
+        updateCurrentSaleInfo();
+        renderSalesTable();
+        
+        showToast('Sale ended successfully', 'success');
+    }
+}
+
+// Generate unique ID
+function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// Clone sale description to banner
+function cloneSaleDescription() {
+    const currentSale = sales.find(sale => sale.active);
+    
+    if (!currentSale) {
+        showToast('No active sale found. Please start a sale first.', 'warning');
+        return;
+    }
+    
+    // Create banner text from sale information
+    const bannerText = `🎉 ${currentSale.name}: ${currentSale.description}`;
+    
+    // Store in localStorage so the homepage can access it
+    localStorage.setItem('bannerText', bannerText);
+    
+    showToast('Sale description cloned to banner successfully! The banner will update on the homepage.', 'success');
+}
+
+// Initialize sales when admin panel loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Add this to the existing DOMContentLoaded event
+    if (typeof loadSales === 'function') {
+        loadSales();
+    }
+});

@@ -14,8 +14,17 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Top Banner Section -->
+    <div class="top-banner" id="topBanner">
+        <div class="container">
+            <div class="banner-content">
+                <span class="banner-text" id="bannerText">✨ Free shipping on orders over $50 | Use code BEAUTY20 for 20% off your first order ✨</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-pink">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="#">
                 <img src="https://naturerepublic.ae/wp-content/uploads/2024/12/logo-e1733250622771.png" alt="Nature Republic" height="40" class="me-2">
@@ -62,7 +71,7 @@
                         </button>
                         <button class="btn btn-pink" id="cartBtn">
                             <i class="fas fa-shopping-cart"></i>
-                            <span class="cart-count">0</span>
+                            <span class="cart-count badge bg-danger text-white">0</span>
                         </button>
                     </div>
                 </div>
@@ -138,11 +147,196 @@
     </section>
 
     <!-- Featured Products -->
-    <section class="products-section py-5 bg-light-pink">
+    <section class="products-section py-5 bg-light">
         <div class="container">
-            <h2 class="section-title text-center mb-5">Featured Products</h2>
-            <div class="row" id="featuredProducts">
-                <!-- Products will be loaded dynamically -->
+            <h2 class="section-title text-center mb-3">Featured Products</h2>
+            <p class="text-center text-muted mb-5">Our Best Selling Products Loved by Customers</p>
+            <div class="products-scroll-container">
+                <div class="products-scroll" id="featuredProducts">
+                    <!-- Products will be loaded dynamically -->
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <a href="category.html" class="btn btn-pink btn-lg">View All Products</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Summer Beauty Sale Section -->
+    <section class="sale-section py-5">
+        <div class="container">
+            <div class="sale-banner text-center">
+                <h2 class="sale-title">Summer Beauty Sale</h2>
+                <p class="sale-description">Up to 50% off on selected items. Limited time offer!</p>
+                
+                <div class="countdown-timer mb-4">
+                    <div class="countdown-item">
+                        <span class="countdown-number" id="days">07</span>
+                        <span class="countdown-label">Days</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-number" id="hours">00</span>
+                        <span class="countdown-label">Hours</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-number" id="minutes">00</span>
+                        <span class="countdown-label">Minutes</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-number" id="seconds">00</span>
+                        <span class="countdown-label">Seconds</span>
+                    </div>
+                </div>
+                
+                <button class="btn btn-sale btn-lg">Shop the Sale</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Customer Testimonials Section -->
+    <section class="testimonials-section py-5">
+        <div class="container">
+            <h2 class="section-title text-center mb-5">What Our Customers Say</h2>
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-rating mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="testimonial-text">"The hydrating serum completely transformed my skin! I've never received so many compliments before. Definitely worth every penny."</p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">
+                                <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Sarah J." class="rounded-circle">
+                            </div>
+                            <div class="author-info">
+                                <h6 class="author-name">Sarah J.</h6>
+                                <span class="verified-badge">Verified Buyer</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-rating mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="testimonial-text">"I'm obsessed with the eyeshadow palette. The colors are so pigmented and blend beautifully. It's become my daily go-to!"</p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">
+                                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Emily T." class="rounded-circle">
+                            </div>
+                            <div class="author-info">
+                                <h6 class="author-name">Emily T.</h6>
+                                <span class="verified-badge">Verified Buyer</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-rating mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="far fa-star text-warning"></i>
+                        </div>
+                        <p class="testimonial-text">"The lipstick set has the perfect range of colors for every occasion. The formula is long-lasting and doesn't dry out my lips."</p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">
+                                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Jessica M." class="rounded-circle">
+                            </div>
+                            <div class="author-info">
+                                <h6 class="author-name">Jessica M.</h6>
+                                <span class="verified-badge">Verified Buyer</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Beauty Tips & Trends Section -->
+    <section class="beauty-tips-section py-5">
+        <div class="container">
+            <h2 class="section-title text-center mb-5">Beauty Tips & Trends</h2>
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="tip-card">
+                        <div class="tip-image">
+                            <img src="https://images.unsplash.com/photo-1552642084-9a907e588aee?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Morning Skincare Routine" class="img-fluid">
+                            <span class="category-tag">Skincare</span>
+                        </div>
+                        <div class="tip-content">
+                            <h5 class="tip-title">5-Step Morning Skincare Routine</h5>
+                            <p class="tip-description">Discover the perfect morning routine to wake up your skin and keep it glowing all day long.</p>
+                            <a href="#" class="read-more">Read More →</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="tip-card">
+                        <div class="tip-image">
+                            <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Summer Makeup Trends" class="img-fluid">
+                            <span class="category-tag">Makeup</span>
+                        </div>
+                        <div class="tip-content">
+                            <h5 class="tip-title">Summer 2024 Makeup Trends</h5>
+                            <p class="tip-description">From glossy lids to bold blush, these are the hottest makeup trends to try this season.</p>
+                            <a href="#" class="read-more">Read More →</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="tip-card">
+                        <div class="tip-image">
+                            <img src="https://images.unsplash.com/photo-1605497788044-5a32c7078486?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Hair Protection" class="img-fluid">
+                            <span class="category-tag">Haircare</span>
+                        </div>
+                        <div class="tip-content">
+                            <h5 class="tip-title">How to Protect Your Hair from Heat Damage</h5>
+                            <p class="tip-description">Essential tips and products to keep your hair healthy while using heat styling tools.</p>
+                            <a href="#" class="read-more">Read More →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <a href="#" class="btn btn-outline-pink btn-lg">View All Articles</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="newsletter-section py-5">
+        <div class="container">
+            <div class="newsletter-content text-center">
+                <h2 class="newsletter-title">Join Our Beauty Community</h2>
+                <p class="newsletter-description">Subscribe to our newsletter for exclusive offers, beauty tips, and new product launches.</p>
+                <div class="newsletter-form">
+                    <div class="input-group justify-content-center">
+                        <input type="email" class="form-control newsletter-input" placeholder="Your email address">
+                        <button class="btn btn-pink newsletter-btn">Subscribe</button>
+                    </div>
+                </div>
+                <p class="newsletter-privacy">We respect your privacy. Unsubscribe at any time.</p>
             </div>
         </div>
     </section>
@@ -256,18 +450,20 @@
                         <li><a href="#" class="text-white-50">FAQ</a></li>
                     </ul>
                 </div>
-                <div class="col-md-4">
-                    <h6>Newsletter</h6>
-                    <p>Subscribe for beauty tips and exclusive offers!</p>
-                    <div class="input-group">
-                        <input type="email" class="form-control" placeholder="Your email">
-                        <button class="btn btn-pink">Subscribe</button>
-                    </div>
-                </div>
+                                 <div class="col-md-4">
+                     <h6 class="mb-3">Payment Methods</h6>
+                     <div class="payment-methods">
+                         <span class="payment-text">VISA</span>
+                         <span class="payment-text">Mastercard</span>
+                         <span class="payment-text">AMEX</span>
+                         <span class="payment-text">PayPal</span>
+                         <span class="payment-text">Apple Pay</span>
+                     </div>
+                 </div>
             </div>
             <hr class="my-4">
             <div class="text-center">
-                <p>&copy; 2024 Nature Republic. All rights reserved.</p>
+                <p>&copy; 2025 Nature Republic. All rights reserved.</p>
             </div>
         </div>
     </footer>

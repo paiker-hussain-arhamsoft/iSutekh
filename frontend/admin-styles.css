@@ -1,20 +1,31 @@
-/* Admin Panel Styles */
+/* Admin Panel Styles - Updated Color Scheme */
 :root {
     --primary-pink: #ff69b4;
     --dark-pink: #d63384;
     --accent-pink: #ff1493;
     --soft-pink: #fce4ec;
     --rose-pink: #f8bbd9;
+    
+    /* New Color Scheme */
+    --primary-white: #ffffff;
+    --primary-cream: #faf8f5;
+    --secondary-cream: #fefefe;
+    --light-cream: #f8f6f3;
+    --border-light: #e9ecef;
+    --border-lighter: #f1f3f4;
+    
     --admin-dark: #1a1a1a;
     --admin-darker: #0d1117;
-    --admin-light: #f8f9fa;
+    --admin-light: var(--primary-cream);
     --admin-gray: #6c757d;
     --admin-success: #28a745;
     --admin-warning: #ffc107;
     --admin-danger: #dc3545;
     --admin-info: #17a2b8;
-    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
+    
+    --shadow: 0 4px 6px rgba(44, 24, 16, 0.08);
+    --shadow-hover: 0 8px 15px rgba(44, 24, 16, 0.12);
+    --shadow-pink: 0 4px 6px rgba(255, 105, 180, 0.15);
 }
 
 /* Logo Styles */
@@ -56,10 +67,8 @@ body {
 
 .brand-text {
     margin-left: 0.5rem;
-    background: linear-gradient(45deg, var(--primary-pink), var(--accent-pink));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--primary-white);
+    font-weight: bold;
 }
 
 /* Sidebar Styles */
@@ -70,8 +79,9 @@ body {
     left: 0;
     z-index: 100;
     padding: 48px 0 0;
-    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-    background: var(--admin-light);
+    box-shadow: inset -1px 0 0 var(--border-light);
+    background: var(--primary-white);
+    border-right: 1px solid var(--border-light);
 }
 
 .sidebar .nav-link {
@@ -85,12 +95,12 @@ body {
 
 .sidebar .nav-link:hover {
     color: var(--primary-pink);
-    background-color: var(--soft-pink);
+    background-color: var(--light-cream);
 }
 
 .sidebar .nav-link.active {
     color: var(--primary-pink);
-    background-color: var(--soft-pink);
+    background-color: var(--light-cream);
     border-left: 3px solid var(--primary-pink);
 }
 

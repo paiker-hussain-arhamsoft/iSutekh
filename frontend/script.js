@@ -1,14 +1,11 @@
 // Global variables
 let cart = [];
 let products = [];
-let currentUser = null;
 
 // API endpoints
 const API_BASE_URL = 'http://localhost:3000';
-const PYTHON_API_URL = 'http://localhost:5000';
 
 // DOM elements
-const loginBtn = document.getElementById('loginBtn');
 const cartBtn = document.getElementById('cartBtn');
 const cartCount = document.querySelector('.cart-count');
 const featuredProducts = document.getElementById('featuredProducts');
@@ -22,8 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadCategories();
     loadCart();
     setupEventListeners();
-    initializeModalForms(); // Initialize modal form handlers
-    checkAuthStatus(); // Check authentication status on page load
+    startCountdown();
     showToast('Welcome to Nature Republic! 💖', 'success');
 });
 
@@ -38,16 +34,6 @@ function setupEventListeners() {
 
     // Checkout button
     checkoutBtn.addEventListener('click', handleCheckout);
-
-    // Login button (direct handler)
-    if (loginBtn) {
-        loginBtn.addEventListener('click', function(e) {
-            // Only handle if it's the login button (not the dropdown)
-            if (e.target.closest('.btn-outline-pink') && !currentUser) {
-                openLoginModal();
-            }
-        });
-    }
 
     // Search functionality
     const searchInput = document.querySelector('.search-box input');
@@ -93,33 +79,25 @@ function renderFeaturedProducts() {
     const featured = products.filter(product => product.featured).slice(0, 8);
     
     featuredProducts.innerHTML = featured.map(product => `
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="product-card fade-in">
-                <div class="product-image">
-                    <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x300/ff69b4/ffffff?text=Beauty+Product'">
+        <div class="product-card fade-in">
+            <div class="product-image">
+                <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x300/ff69b4/ffffff?text=Beauty+Product'">
+            </div>
+            <div class="product-info">
+                <h5 class="product-title">
+                    <a href="product.html?id=${product.id}" class="text-decoration-none text-dark">
+                        ${product.name}
+                    </a>
+                </h5>
+                <div class="product-rating">
+                    ${generateStars(product.rating)}
+                    <span class="ms-2">(${product.reviewCount})</span>
                 </div>
-                <div class="product-info">
-                    <h5 class="product-title">
-                        <a href="product.html?id=${product.id}" class="text-decoration-none text-dark">
-                            ${product.name}
-                        </a>
-                    </h5>
-                    <div class="product-rating">
-                        ${generateStars(product.rating)}
-                        <span class="ms-2">(${product.reviewCount})</span>
-                    </div>
-                    <p class="product-description">${product.description.substring(0, 80)}...</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="product-price">AED ${product.price.toFixed(2)}</span>
-                        <div class="d-flex gap-2">
-                            <a href="product.html?id=${product.id}" class="btn btn-outline-pink btn-sm">
-                                <i class="fas fa-eye"></i> View
-                            </a>
-                            <button class="btn btn-pink btn-sm" onclick="addToCart(${product.id})">
-                                <i class="fas fa-plus"></i> Add to Cart
-                            </button>
-                        </div>
-                    </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="product-price">AED ${product.price.toFixed(2)}</span>
+                    <button class="btn btn-pink btn-sm rounded-circle" onclick="addToCart(${product.id})" style="width: 40px; height: 40px; padding: 0;">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -291,51 +269,19 @@ function loadCart() {
 
 // Handle checkout
 async function handleCheckout() {
-    if (!currentUser) {
-        showToast('Please login to checkout', 'warning');
-        const cartModal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
-        cartModal.hide();
-        
-        // Open login modal instead of redirecting
-        openLoginModal();
-        return;
-    }
-
     if (cart.length === 0) {
         showToast('Your cart is empty', 'warning');
         return;
     }
 
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/orders`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('natureRepublicToken')}`
-            },
-            body: JSON.stringify({
-                items: cart,
-                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-            })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            cart = [];
-            saveCart();
-            updateCartCount();
-            showToast('Order placed successfully!', 'success');
-            
-            const cartModal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
-            cartModal.hide();
-        } else {
-            showToast(data.message || 'Checkout failed', 'error');
-        }
-    } catch (error) {
-        console.error('Checkout error:', error);
-        showToast('Checkout failed. Please try again.', 'error');
-    }
+    // Simple checkout without authentication
+    cart = [];
+    saveCart();
+    updateCartCount();
+    showToast('Order placed successfully!', 'success');
+    
+    const cartModal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
+    cartModal.hide();
 }
 
 // Handle search
@@ -422,183 +368,40 @@ function debounce(func, wait) {
     };
 }
 
-// Check if user is logged in on page load
-function checkAuthStatus() {
-    const user = localStorage.getItem('natureRepublicUser');
-    const token = localStorage.getItem('natureRepublicToken');
+// Countdown Timer Function
+function startCountdown() {
+    // Set the end date (7 days from now)
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + 7);
     
-    if (user && token) {
-        try {
-            currentUser = JSON.parse(user);
-            updateNavigationForUser();
-        } catch (e) {
-            // Invalid user data, clear it
-            localStorage.removeItem('natureRepublicUser');
-            localStorage.removeItem('natureRepublicToken');
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = endDate.getTime() - now;
+        
+        if (distance < 0) {
+            // Sale has ended
+            document.getElementById('days').textContent = '00';
+            document.getElementById('hours').textContent = '00';
+            document.getElementById('minutes').textContent = '00';
+            document.getElementById('seconds').textContent = '00';
+            return;
         }
-    }
-}
-
-// Update navigation for authenticated user
-function updateNavigationForUser() {
-    const loginBtn = document.getElementById('loginBtn');
-    if (currentUser) {
-        loginBtn.innerHTML = `
-            <div class="user-menu">
-                <span class="user-name">
-                    <i class="fas fa-user"></i> ${currentUser.name}
-                </span>
-                <div class="user-actions">
-                    <button class="btn btn-sm btn-outline-pink" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
-                </div>
-            </div>
-        `;
-    } else {
-        loginBtn.innerHTML = `
-            <button class="btn btn-outline-pink" onclick="openLoginModal()">
-                <i class="fas fa-user"></i> Login
-            </button>
-        `;
-    }
-}
-
-// User profile functions
-function viewProfile() {
-    if (!currentUser) return;
-    
-    showToast(`Welcome back, ${currentUser.name}!`, 'success');
-    // You can implement a profile modal here
-}
-
-function viewOrders() {
-    if (!currentUser) return;
-    
-    showToast('Orders feature coming soon!', 'info');
-    // You can implement an orders view here
-}
-
-function logout() {
-    localStorage.removeItem('natureRepublicUser');
-    localStorage.removeItem('natureRepublicToken');
-    currentUser = null;
-    updateNavigationForUser();
-    showToast('Logged out successfully', 'success');
-}
-
-// Modal handling functions
-function openLoginModal() {
-    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-    loginModal.show();
-}
-
-// Initialize modal form handlers
-function initializeModalForms() {
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    
-    if (loginForm) {
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            try {
-                const response = await fetch('http://localhost:5000/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Store user data and token
-                    localStorage.setItem('natureRepublicUser', JSON.stringify(data.user));
-                    localStorage.setItem('natureRepublicToken', data.token);
-                    
-                    // Update current user
-                    currentUser = data.user;
-                    
-                    // Update navigation
-                    updateNavigationForUser();
-                    
-                    // Close modal
-                    const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
-                    loginModal.hide();
-                    
-                    // Clear form
-                    loginForm.reset();
-                    
-                    // Show success message
-                    showToast(`Welcome back, ${data.user.name}!`, 'success');
-                    
-                    // Redirect admin to admin panel
-                    if (data.user.role === 'admin') {
-                        window.location.href = 'admin.html';
-                    }
-                } else {
-                    const errorData = await response.json();
-                    showToast(errorData.message || 'Login failed', 'error');
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-                showToast('Login failed. Please try again.', 'error');
-            }
-        });
+        
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        document.getElementById('days').textContent = days.toString().padStart(2, '0');
+        document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+        document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+        document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
     }
     
-    if (registerForm) {
-        registerForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('registerName').value;
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            
-            try {
-                const response = await fetch('http://localhost:5000/auth/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ name, email, password })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Store user data and token
-                    localStorage.setItem('natureRepublicUser', JSON.stringify(data.user));
-                    localStorage.setItem('natureRepublicToken', data.token);
-                    
-                    // Update current user
-                    currentUser = data.user;
-                    
-                    // Update navigation
-                    updateNavigationForUser();
-                    
-                    // Close modal
-                    const registerModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
-                    registerModal.hide();
-                    
-                    // Clear form
-                    registerForm.reset();
-                    
-                    // Show success message
-                    showToast(`Welcome to Nature Republic, ${data.user.name}!`, 'success');
-                } else {
-                    const errorData = await response.json();
-                    showToast(errorData.message || 'Registration failed', 'error');
-                }
-            } catch (error) {
-                console.error('Registration error:', error);
-                showToast('Registration failed. Please try again.', 'error');
-            }
-        });
-    }
+    // Update countdown every second
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
 }
+
+
+
