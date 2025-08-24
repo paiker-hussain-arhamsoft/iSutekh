@@ -13,16 +13,20 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configuration
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'beauty-bliss-secret-key-2024')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///beauty_bliss_users.db'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'nature-republic-secret-key-2024')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///nature_republic_users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'beauty-bliss-jwt-secret-2024')
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'nature-republic-jwt-secret-2024')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 
 # Initialize extensions
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
-CORS(app, origins=['http://localhost:3000', 'http://127.0.0.1:3000'])
+CORS(app, 
+     origins=['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:8080', 'http://127.0.0.1:8080'],
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
+     supports_credentials=True)
 
 # User model
 class User(db.Model):
@@ -51,24 +55,24 @@ with app.app_context():
     db.create_all()
     
     # Create admin user if not exists
-    admin_user = User.query.filter_by(email='admin@beautybliss.com').first()
+    admin_user = User.query.filter_by(email='admin@naturerepublic.com').first()
     if not admin_user:
         admin_user = User(
             name='Admin User',
-            email='admin@beautybliss.com',
+            email='admin@naturerepublic.com',
             password_hash=generate_password_hash('admin123'),
             role='admin',
             status='active'
         )
         db.session.add(admin_user)
         db.session.commit()
-        print("✅ Admin user created: admin@beautybliss.com / admin123")
+        print("✅ Admin user created: admin@naturerepublic.com / admin123")
 
 # Routes
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'Beauty Bliss Python API',
+        'message': 'Nature Republic Python API',
         'version': '1.0.0',
         'status': 'running'
     })
@@ -353,6 +357,6 @@ def internal_error(error):
     return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
-    print("🚀 Beauty Bliss Python server starting...")
-    print("👤 Admin credentials: admin@beautybliss.com / admin123")
+    print("🚀 Nature Republic Python server starting...")
+    print("👤 Admin credentials: admin@naturerepublic.com / admin123")
     app.run(debug=True, host='0.0.0.0', port=5000)

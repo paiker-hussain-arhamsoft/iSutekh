@@ -1,14 +1,11 @@
 // Global variables
 let cart = [];
 let products = [];
-let currentUser = null;
 
 // API endpoints
 const API_BASE_URL = 'http://localhost:3000';
-const PYTHON_API_URL = 'http://localhost:5000';
 
 // DOM elements
-const loginBtn = document.getElementById('loginBtn');
 const cartBtn = document.getElementById('cartBtn');
 const cartCount = document.querySelector('.cart-count');
 const featuredProducts = document.getElementById('featuredProducts');
@@ -19,19 +16,15 @@ const checkoutBtn = document.getElementById('checkoutBtn');
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     loadProducts();
+    loadCategories();
     loadCart();
     setupEventListeners();
-    showToast('Welcome to Beauty Bliss! 💖', 'success');
+    startCountdown();
+    showToast('Welcome to Nature Republic! 💖', 'success');
 });
 
 // Setup event listeners
 function setupEventListeners() {
-    // Login button
-    loginBtn.addEventListener('click', () => {
-        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-        loginModal.show();
-    });
-
     // Cart button
     cartBtn.addEventListener('click', () => {
         const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
@@ -39,18 +32,21 @@ function setupEventListeners() {
         renderCart();
     });
 
-    // Login form
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
-    
-    // Register form
-    document.getElementById('registerForm').addEventListener('submit', handleRegister);
-
     // Checkout button
     checkoutBtn.addEventListener('click', handleCheckout);
 
     // Search functionality
     const searchInput = document.querySelector('.search-box input');
-    searchInput.addEventListener('input', debounce(handleSearch, 300));
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(handleSearch, 300));
+    }
+    
+    // Listen for category refresh messages from admin panel
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'refreshCategories') {
+            loadCategories();
+        }
+    });
 }
 
 // Load products from API
@@ -65,33 +61,83 @@ async function loadProducts() {
     }
 }
 
+// Load categories from API
+async function loadCategories() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/categories`);
+        const categories = await response.json();
+        renderCategoriesSection(categories);
+        updateCategoryDropdown(categories);
+    } catch (error) {
+        console.error('Error loading categories:', error);
+        showToast('Error loading categories', 'error');
+    }
+}
+
 // Render featured products
 function renderFeaturedProducts() {
     const featured = products.filter(product => product.featured).slice(0, 8);
     
     featuredProducts.innerHTML = featured.map(product => `
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="product-card fade-in">
-                <div class="product-image">
-                    <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x300/ff69b4/ffffff?text=Beauty+Product'">
+        <div class="product-card fade-in">
+            <div class="product-image">
+                <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x300/ff69b4/ffffff?text=Beauty+Product'">
+            </div>
+            <div class="product-info">
+                <h5 class="product-title">
+                    <a href="product.html?id=${product.id}" class="text-decoration-none text-dark">
+                        ${product.name}
+                    </a>
+                </h5>
+                <div class="product-rating">
+                    ${generateStars(product.rating)}
+                    <span class="ms-2">(${product.reviewCount})</span>
                 </div>
-                <div class="product-info">
-                    <h5 class="product-title">${product.name}</h5>
-                    <div class="product-rating">
-                        ${generateStars(product.rating)}
-                        <span class="ms-2">(${product.reviewCount})</span>
-                    </div>
-                    <p class="product-description">${product.description.substring(0, 80)}...</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="product-price">$${product.price.toFixed(2)}</span>
-                        <button class="btn btn-pink btn-sm" onclick="addToCart(${product.id})">
-                            <i class="fas fa-plus"></i> Add to Cart
-                        </button>
-                    </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="product-price">AED ${product.price.toFixed(2)}</span>
+                    <button class="btn btn-pink btn-sm rounded-circle" onclick="addToCart(${product.id})" style="width: 40px; height: 40px; padding: 0;">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
                 </div>
             </div>
         </div>
     `).join('');
+}
+
+// Render categories section
+function renderCategoriesSection(categories) {
+    const categoriesContainer = document.querySelector('.categories-section .row');
+    if (!categoriesContainer) return;
+    
+    categoriesContainer.innerHTML = categories.map(category => `
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="${category.icon || 'fas fa-tag'}"></i>
+                </div>
+                <h4>${category.name}</h4>
+                <p>${category.description || 'Explore our amazing products'}</p>
+                <a href="category.html?category=${encodeURIComponent(category.name)}" class="btn btn-outline-pink btn-sm">
+                    View Products
+                </a>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Update category dropdown in navigation
+function updateCategoryDropdown(categories) {
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+    if (!dropdownMenu) return;
+    
+    dropdownMenu.innerHTML = categories.map(category => `
+        <li><a class="dropdown-item" href="category.html?category=${encodeURIComponent(category.name)}">${category.name}</a></li>
+    `).join('');
+}
+
+// Filter products by category - redirect to category page
+function filterByCategory(categoryName) {
+    window.location.href = `category.html?category=${encodeURIComponent(categoryName)}`;
 }
 
 // Generate star rating HTML
@@ -177,7 +223,7 @@ function renderCart() {
             </div>
             <div class="cart-item-details">
                 <h6 class="cart-item-title">${item.name}</h6>
-                <p class="cart-item-price">$${item.price.toFixed(2)}</p>
+                <p class="cart-item-price">AED ${item.price.toFixed(2)}</p>
             </div>
             <div class="quantity-controls">
                 <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
@@ -185,7 +231,7 @@ function renderCart() {
                 <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
             </div>
             <div class="ms-3">
-                <span class="fw-bold">$${(item.price * item.quantity).toFixed(2)}</span>
+                <span class="fw-bold">AED ${(item.price * item.quantity).toFixed(2)}</span>
                 <button class="btn btn-sm btn-outline-danger ms-2" onclick="removeFromCart(${item.id})">
                     <i class="fas fa-trash"></i>
                 </button>
@@ -205,136 +251,37 @@ function updateCartCount() {
 
 // Save cart to localStorage
 function saveCart() {
-    localStorage.setItem('beautyBlissCart', JSON.stringify(cart));
+    localStorage.setItem('natureRepublicCart', JSON.stringify(cart));
 }
 
 // Load cart from localStorage
 function loadCart() {
-    const savedCart = localStorage.getItem('beautyBlissCart');
+    const savedCart = localStorage.getItem('natureRepublicCart');
     if (savedCart) {
         cart = JSON.parse(savedCart);
         updateCartCount();
     }
 }
 
-// Handle login
-async function handleLogin(event) {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const email = formData.get('email');
-    const password = formData.get('password');
 
-    try {
-        const response = await fetch(`${PYTHON_API_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password })
-        });
 
-        const data = await response.json();
-        
-        if (response.ok) {
-            currentUser = data.user;
-            localStorage.setItem('beautyBlissUser', JSON.stringify(data.user));
-            localStorage.setItem('beautyBlissToken', data.token);
-            
-            loginBtn.innerHTML = `<i class="fas fa-user"></i> ${data.user.name}`;
-            showToast('Login successful!', 'success');
-            
-            const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
-            modal.hide();
-        } else {
-            showToast(data.message || 'Login failed', 'error');
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showToast('Login failed. Please try again.', 'error');
-    }
-}
 
-// Handle register
-async function handleRegister(event) {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const name = formData.get('name');
-    const email = formData.get('email');
-    const password = formData.get('password');
-
-    try {
-        const response = await fetch(`${PYTHON_API_URL}/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name, email, password })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            showToast('Registration successful! Please login.', 'success');
-            // Switch to login tab
-            const loginTab = document.querySelector('#authTabs .nav-link');
-            const loginTabInstance = new bootstrap.Tab(loginTab);
-            loginTabInstance.show();
-        } else {
-            showToast(data.message || 'Registration failed', 'error');
-        }
-    } catch (error) {
-        console.error('Registration error:', error);
-        showToast('Registration failed. Please try again.', 'error');
-    }
-}
 
 // Handle checkout
 async function handleCheckout() {
-    if (!currentUser) {
-        showToast('Please login to checkout', 'warning');
-        const cartModal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
-        cartModal.hide();
-        
-        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-        loginModal.show();
-        return;
-    }
-
     if (cart.length === 0) {
         showToast('Your cart is empty', 'warning');
         return;
     }
 
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/orders`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('beautyBlissToken')}`
-            },
-            body: JSON.stringify({
-                items: cart,
-                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-            })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            cart = [];
-            saveCart();
-            updateCartCount();
-            showToast('Order placed successfully!', 'success');
-            
-            const cartModal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
-            cartModal.hide();
-        } else {
-            showToast(data.message || 'Checkout failed', 'error');
-        }
-    } catch (error) {
-        console.error('Checkout error:', error);
-        showToast('Checkout failed. Please try again.', 'error');
-    }
+    // Simple checkout without authentication
+    cart = [];
+    saveCart();
+    updateCartCount();
+    showToast('Order placed successfully!', 'success');
+    
+    const cartModal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
+    cartModal.hide();
 }
 
 // Handle search
@@ -361,11 +308,11 @@ function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast show`;
     toast.innerHTML = `
-        <div class="toast-header">
-            <i class="fas fa-${getToastIcon(type)} text-${getToastColor(type)} me-2"></i>
-            <strong class="me-auto">Beauty Bliss</strong>
-            <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
-        </div>
+                 <div class="toast-header">
+             <i class="fas fa-${getToastIcon(type)} text-${getToastColor(type)} me-2"></i>
+             <strong class="me-auto">Nature Republic</strong>
+             <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+         </div>
         <div class="toast-body">
             ${message}
         </div>
@@ -421,16 +368,40 @@ function debounce(func, wait) {
     };
 }
 
-// Check if user is logged in on page load
-function checkAuthStatus() {
-    const user = localStorage.getItem('beautyBlissUser');
-    const token = localStorage.getItem('beautyBlissToken');
+// Countdown Timer Function
+function startCountdown() {
+    // Set the end date (7 days from now)
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + 7);
     
-    if (user && token) {
-        currentUser = JSON.parse(user);
-        loginBtn.innerHTML = `<i class="fas fa-user"></i> ${currentUser.name}`;
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = endDate.getTime() - now;
+        
+        if (distance < 0) {
+            // Sale has ended
+            document.getElementById('days').textContent = '00';
+            document.getElementById('hours').textContent = '00';
+            document.getElementById('minutes').textContent = '00';
+            document.getElementById('seconds').textContent = '00';
+            return;
+        }
+        
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        document.getElementById('days').textContent = days.toString().padStart(2, '0');
+        document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+        document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+        document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
     }
+    
+    // Update countdown every second
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
 }
 
-// Initialize auth status
-checkAuthStatus();
+
+

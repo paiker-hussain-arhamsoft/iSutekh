@@ -1,12 +1,12 @@
-# Beauty Bliss Ecommerce Website - Installation Guide
+# Nature Republic Ecommerce Website - Installation Guide
 
 ## 🌸 Overview
 
-Beauty Bliss is a modern ecommerce website for beauty products with a beautiful pink theme. It features both Node.js and Python backends, providing a complete solution for product management, user authentication, and order processing.
+Nature Republic is a modern ecommerce website for beauty products with a beautiful pink theme. It features both Node.js and Python backends, providing a complete solution for product management, user authentication, and order processing.
 
 ## 🛠️ Prerequisites
 
-Before installing Beauty Bliss, make sure you have the following installed on your system:
+Before installing Nature Republic, make sure you have the following installed on your system:
 
 ### Required Software
 - **Node.js** (v14 or higher) - [Download here](https://nodejs.org/)
@@ -32,7 +32,7 @@ git --version
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd beauty-bliss
+   cd nature-republic
    ```
 
 2. **Run the startup script**
@@ -91,13 +91,13 @@ Once all servers are running, you can access:
 
 ## 👤 Default Admin Credentials
 
-- **Email**: admin@beautybliss.com
+- **Email**: admin@naturerepublic.com
 - **Password**: admin123
 
 ## 📁 Project Structure
 
 ```
-beauty-bliss/
+nature-republic/
 ├── frontend/                 # Frontend files
 │   ├── index.html           # Main website
 │   ├── admin.html           # Admin panel
@@ -138,8 +138,8 @@ JWT_SECRET_KEY=your-jwt-secret-key-here
 ### Database Configuration
 
 The application uses SQLite databases:
-- **Products/Categories/Orders**: `database/beauty_bliss.db`
-- **Users**: `python-backend/beauty_bliss_users.db`
+- **Products/Categories/Orders**: `database/nature_republic.db`
+- **Users**: `python-backend/nature_republic_users.db`
 
 ## 🚀 Features
 
@@ -252,8 +252,8 @@ The application uses SQLite databases:
 4. **Database issues**
    ```bash
    # Remove existing databases
-   rm database/beauty_bliss.db
-   rm python-backend/beauty_bliss_users.db
+   rm database/nature_republic.db
+   rm python-backend/nature_republic_users.db
    
    # Restart servers to recreate databases
    ```
